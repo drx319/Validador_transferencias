@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Bancario Pro</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1>🏦 Análisis Bancario Pro</h1>
+            <p>Sistema de Validación de Transacciones</p>
+        </header>
+
+        <section class="upload-section">
+            <h2>📊 Cargar Datos</h2>
+            <p>Selecciona el archivo CSV con los datos de origen y la carpeta para el análisis</p>
+            
+            <div class="upload-container">
+                <div class="csv-upload">
+                    <h3>Archivo CSV</h3>
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-content">
+                            <div class="upload-icon">📄</div>
+                            <p>Arrastra tu archivo CSV aquí</p>
+                            <span>o</span>
+                            <button type="button" class="select-file-btn" id="selectFileBtn">Seleccionar Archivo</button>
+                            <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="file-info" id="fileInfo" style="display: none;"></div>
+                </div>
+
+                <div class="folder-selection">
+                    <h3>Carpeta de Imágenes</h3>
+                    <div class="folder-input-container">
+                        <!-- Input oculto que solo obtiene la ruta -->
+                        <input type="file" id="folderInput" webkitdirectory style="display: none;">
+                        
+                        <!-- Botón visible para seleccionar carpeta -->
+                        <button type="button" id="folderSelectBtn" class="folder-select-button">
+                            📁 Seleccionar Carpeta
+                        </button>
+                        
+                        <!-- Mostrar la ruta seleccionada -->
+                        <div id="selectedPath" class="selected-path" style="display: none;">
+                            <span id="pathText"></span>
+                            <button type="button" id="clearPath" class="clear-path-btn">✕</button>
+                        </div>
+                        
+                        <p class="folder-help-text">Selecciona la carpeta donde están las imágenes de los comprobantes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="loadSampleBtn" class="btn-secondary" style="display: none;">🎲 Cargar Datos de Prueba</button>
+                <button id="analyzeBtn" class="btn-primary" disabled>🔍 Ejecutar Análisis</button>
+            </div>
+        </section>
+
+        <section class="preview-section" style="display: none;">
+            <h2>👁️ Vista Previa de Datos</h2>
+            
+            <div class="preview-container">
+                <div class="csv-preview">
+                    <h3>Datos CSV Origen</h3>
+                    <div class="table-container">
+                        <table id="csvPreviewTable">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Referencia</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="api-preview">
+                    <h3>Datos API Respuesta</h3>
+                    <div class="table-container">
+                        <table id="apiPreviewTable">
+                            <thead>
+                                <tr>
+                                    <th>Comprobante</th>
+                                    <th>Fecha</th>
+                                    <th>Valor</th>
+                                    <th>Cuenta Destino</th>
+                                    <th>Nombre Destino</th>
+                                    <th>Imagen</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="results-section" style="display: none;">
+            <h2>📈 Resultados del Análisis</h2>
+            
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMatches">0</div>
+                    <div class="stat-label">Equivalencias Encontradas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="partialMatches">0</div>
+                    <div class="stat-label">Equivalencias Parciales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="noMatches">0</div>
+                    <div class="stat-label">Sin Equivalencia</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-section">
+                    <h3>📊 Distribución de Equivalencias</h3>
+                    <div class="chart-container">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-table-section">
+                <h3>📋 Detalle de Equivalencias</h3>
+                <div class="table-controls">
+                    <input type="text" id="searchFilter" placeholder="Buscar en resultados...">
+                    <button id="exportBtn" class="btn-secondary">📄 Exportar CSV</button>
+                </div>
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Estado</th>
+                                <th>Comprobante API</th>
+                                <th>Fecha API</th>
+                                <th>Valor API</th>
+                                <th>Fecha CSV</th>
+                                <th>Valor CSV</th>
+                                <th>Referencia CSV</th>
+                                <th>Confianza</th>
+                                <th>Imagen</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal para visualizar imágenes -->
+        <div id="imageModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🖼️ Comprobante de Transacción</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="image-info">
+                        <p><strong>Comprobante:</strong> <span id="modalComprobante"></span></p>
+                        <p><strong>Fecha:</strong> <span id="modalFecha"></span></p>
+                        <p><strong>Valor:</strong> <span id="modalValor"></span></p>
+                    </div>
+                    <div class="image-container">
+                        <img id="modalImage" src="" alt="Comprobante de transacción">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="downloadBtn" class="btn-secondary">📥 Descargar</button>
+                    <button class="btn-primary close-modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/matching-engine.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

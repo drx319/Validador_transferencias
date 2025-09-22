@@ -1,0 +1,11 @@
+
+pip install easyocr
+python -m spacy download es_core_news_sm
+pip install pandas
+pip install flask
+pip install flask_cors
+
+pip install spacy scikit-learn pdfplumber easyocr pandas flask flask_cors
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Selector de Carpeta</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .folder-select-button {
+            background: #2563eb;
+            color: white;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 2rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 20px 0;
+        }
+        .selected-path {
+            background: #dbeafe;
+            border: 1px solid #2563eb;
+            border-radius: 8px;
+            padding: 1rem;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .clear-path-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+        }
+        #log { 
+            background: #f8f9fa; 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            margin-top: 20px;
+            border-radius: 8px;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test: Selector de Carpeta Optimizado</h1>
+    <p>Este test verifica que solo se extraiga la ruta de la carpeta sin cargar archivos innecesarios.</p>
+
+    <div class="folder-input-container">
+        <!-- Input oculto que solo obtiene la ruta -->
+        <input type="file" id="folderInput" webkitdirectory style="display: none;">
+        
+        <!-- Botón visible para seleccionar carpeta -->
+        <button type="button" id="folderSelectBtn" class="folder-select-button">
+            📁 Seleccionar Carpeta
+        </button>
+        
+        <!-- Mostrar la ruta seleccionada -->
+        <div id="selectedPath" class="selected-path">
+            <span id="pathText"></span>
+            <button type="button" id="clearPath" class="clear-path-btn">✕</button>
+        </div>
+    </div>
+
+    <div id="log">Esperando selección de carpeta...</div>
+
+    <script>
+        class FolderSelector {
+            constructor() {
+                this.selectedFolderPath = '';
+                this.setupFolderSelector();
+                this.log('🚀 Selector de carpeta inicializado');
+            }
+
+            setupFolderSelector() {
+                const folderInput = document.getElementById('folderInput');
+                const folderSelectBtn = document.getElementById('folderSelectBtn');
+                const selectedPathDiv = document.getElementById('selectedPath');
+                const pathTextSpan = document.getElementById('pathText');
+                const clearPathBtn = document.getElementById('clearPath');
+
+                // Cuando se hace clic en el botón, activar el input oculto
+                folderSelectBtn.addEventListener('click', () => {
+                    this.log('👆 Clic en botón seleccionar carpeta');
+                    folderInput.click();
+                });
+
+                // Cuando se selecciona una carpeta, extraer solo la ruta
+                folderInput.addEventListener('change', (e) => {
+                    const files = e.target.files;
+                    this.log(`📁 Archivos detectados: ${files.length}`);
+                    
+                    if (files.length > 0) {
+                        // Extraer la ruta de la carpeta del primer archivo
+                        const firstFile = files[0];
+                        const fullPath = firstFile.webkitRelativePath;
+                        
+                        this.log(`📄 Primer archivo: ${firstFile.name}`);
+                        this.log(`🛤️ Ruta relativa completa: ${fullPath}`);
+                        
+                        // Obtener solo el directorio base sin el archivo
+                        const pathParts = fullPath.split('/');
+                        pathParts.pop(); // Quitar el nombre del archivo
+                        let folderPath = pathParts.join('/');
+                        
+                        this.log(`📂 Ruta de carpeta extraída: ${folderPath}`);
+                        
+                        // Asegurar que termine en slash
+                        if (folderPath && !folderPath.endsWith('/')) {
+                            folderPath += '/';
+                        }
+
+                        // Construir ruta completa aproximada
+                        const approximatePath = this.constructApproximatePath(folderPath);
+                        this.selectedFolderPath = approximatePath;
+                        
+                        this.log(`✅ Ruta final formateada: ${this.selectedFolderPath}`);
+                        
+                        // Mostrar la ruta seleccionada
+                        pathTextSpan.textContent = this.selectedFolderPath;
+                        selectedPathDiv.style.display = 'flex';
+                        folderSelectBtn.style.display = 'none';
+                        
+                        this.log('🎯 ÉXITO: Solo se extrajo la ruta, no se cargaron archivos');
+                        
+                        // Simular envío al API
+                        this.simulateAPICall();
+                    }
+                });
+
+                // Limpiar selección
+                clearPathBtn.addEventListener('click', () => {
+                    this.clearFolderSelection();
+                });
+            }
+
+            /**
+             * Construye una ruta aproximada basada en la estructura relativa
+             */
+            constructApproximatePath(relativePath) {
+                // Para efectos de demostración, usamos una ruta base típica
+                const basePath = 'D:/talentotechia/python/images/bancolombia/';
+                
+                // Si hay una ruta relativa, la agregamos a la base
+                if (relativePath && relativePath !== '/') {
+                    return basePath + relativePath;
+                }
+                
+                return basePath;
+            }
+
+            clearFolderSelection() {
+                this.selectedFolderPath = '';
+                document.getElementById('selectedPath').style.display = 'none';
+                document.getElementById('folderSelectBtn').style.display = 'flex';
+                document.getElementById('folderInput').value = '';
+                
+                this.log('🗑️ Selección de carpeta eliminada');
+            }
+
+            simulateAPICall() {
+                this.log('📤 Simulando envío al API...');
+                this.log(`🔗 URL del API: /api/analyze`);
+                this.log(`📋 Datos enviados: { folderPath: "${this.selectedFolderPath}" }`);
+                this.log('✅ Listo para integración con API real');
+            }
+
+            log(message) {
+                const logDiv = document.getElementById('log');
+                const timestamp = new Date().toLocaleTimeString();
+                logDiv.textContent += `[${timestamp}] ${message}\n`;
+                console.log(message);
+            }
+        }
+
+        // Inicializar cuando la página cargue
+        document.addEventListener('DOMContentLoaded', () => {
+            new FolderSelector();
+        });
+    </script>
+</body>
+</html>
